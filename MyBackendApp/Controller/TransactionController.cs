@@ -18,6 +18,14 @@ namespace MyBackendApp.Controller{
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetAll()
         => await _db.Transactions.ToListAsync();
+        
+        [HttpGet("by-userID/{id}")]
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetByUser(int id)
+        {
+            var transactions = await _db.Transactions.Where(t=>t.senderId == id || t.receiverId == id).OrderByDescending(t => t.createdAt).ToListAsync();
+            if(!transactions.Any()) return NotFound();
+            else return Ok(transactions);
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionDto dto)
@@ -81,13 +89,12 @@ namespace MyBackendApp.Controller{
                     default:
                         return BadRequest(new { message = "Invalid transaction type. Use Transfer, Deposit, or Withdraw." });
                 }
-
                 // ── Create transaction record ──
                 var transaction = new Transaction
                 {
                     transactionNumber = Guid.NewGuid().ToString(),
                     senderId          = dto.senderId,
-                    receiverId        = receiverAccount.accountId,
+                    receiverId        = receiverAccount.userID,
                     amount            = (decimal) dto.amount,
                     type              = dto.type,
                     status            = "Completed",

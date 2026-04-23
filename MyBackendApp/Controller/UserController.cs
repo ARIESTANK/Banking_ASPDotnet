@@ -76,6 +76,36 @@ namespace MyBackendApp.Controller{
             return Unauthorized("Current password is incorrect");
         }
 
+       [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            // 1. Find the user in the database
+            var user = await _db.Users.FindAsync(id);
+
+            // 2. Check if the user exists
+            if (user == null)
+            {
+                return NotFound(new { message = $"User with ID {id} not found." });
+            }
+
+            try 
+            {
+                // 3. Remove the user
+                _db.Users.Remove(user);
+                
+                // 4. Save changes to the database
+                await _db.SaveChangesAsync();
+
+                return Ok(new { message = "User deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Handle potential database constraints (e.g., existing foreign keys)
+                return BadRequest(new { message = "Error deleting user. Ensure they have no active accounts.", error = ex.Message });
+            }
+        }
+
+
     }
 
 }

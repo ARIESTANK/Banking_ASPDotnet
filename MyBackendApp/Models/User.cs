@@ -17,5 +17,7 @@ namespace MyBackendApp.Models
 
         [Required(ErrorMessage = "Password is required")]
         public required string password { get; set; }
+
+        public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
     }
 }
